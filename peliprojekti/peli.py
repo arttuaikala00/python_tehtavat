@@ -4,14 +4,24 @@ import random
 def main():
     luola = Luola()
     luola.tulosta_luola()
-    #luola.tulosta_huone(13)
+    print("1")
     luola.tulosta_huone(1)
-    #luola.tulosta_huone(3)
-    #luola.tulosta_huone(11)
-    #luola.tulosta_huone(15)
-    #luola.tulosta_huone(21)
-    #luola.tulosta_huone(23)
-    #luola.tulosta_huone(25)
+    print("3")
+    luola.tulosta_huone(3)
+    print("5")
+    luola.tulosta_huone(5)
+    print("11")
+    luola.tulosta_huone(11)
+    print("13")
+    luola.tulosta_huone(13)
+    print("15")
+    luola.tulosta_huone(15)
+    print("21")
+    luola.tulosta_huone(21)
+    print("23")
+    luola.tulosta_huone(23)
+    print("25")
+    luola.tulosta_huone(25)
 
 
 class Luola:
@@ -53,45 +63,41 @@ class Luola:
                 print(" ".join(riviTulostus))
             print()
 
-    """ def tulosta_huone(self, huoneNro):
+    def tulosta_huone(self, huoneNro): #debug: sais tehtyy paremmin
         for huone in self.huoneet:
             huone.luo_tulostettava_sisalto()
 
-        self.kohdeHuone = huoneNro - 1
+        kohdeHuone = huoneNro - 1
 
-        def yHuone(ylahuone):
+        if kohdeHuone // 5 > 0:
+            huone = self.huoneet[kohdeHuone - 5]
             for huoneRivi in range(3):
-                if self.kohdeHuone % 5 == 0:
-                    riviTulostus = [" " * 10]
-                if ylahuone:
-                    self.kohdeHuone -= 5
-                else:
-                    self.kohdeHuone += 5
-                huone = self.huoneet[self.kohdeHuone]
+                riviTulostus = []
+                if kohdeHuone % 5 >= 1:
+                    riviTulostus.append(" " * 10)
                 riviTulostus.extend(huone.huoneMatriisi[huoneRivi])
                 print(" ".join(riviTulostus))
             print()
 
-        def xHuone():
-            if self.kohdeHuone % 5 == 1:
-                pass
-            elif self.kohdeHuone % 5 == 0:
-                pass
-            else:
-                pass
+        for huoneRivi in range(3):
+            riviTulostus = []
+            for luolaSarake in range(max(0, kohdeHuone % 5 - 1), min(4, kohdeHuone % 5 + 1) + 1):
+                huone = self.huoneet[kohdeHuone // 5 * 5 + luolaSarake]
+                if riviTulostus:
+                    riviTulostus.append(" ")
+                riviTulostus.extend(huone.huoneMatriisi[huoneRivi])
+            print(" ".join(riviTulostus))
+        print()
+
+        if kohdeHuone // 5 < 4:
+            huone = self.huoneet[kohdeHuone + 5]
             for huoneRivi in range(3):
                 riviTulostus = []
-                for luolaSarake in range(3):
-                    huone = self.huoneet[self.kohdeHuone + luolaSarake - 1]
-                    riviTulostus.extend(huone.huoneMatriisi[huoneRivi])
-                    if luolaSarake <= 3:
-                        riviTulostus.extend([" "])
+                if (kohdeHuone - 5) % 5 >= 1:
+                    riviTulostus.append(" " * 10)
+                riviTulostus.extend(huone.huoneMatriisi[huoneRivi])
                 print(" ".join(riviTulostus))
             print()
-
-        print(yHuone(True))
-        print(xHuone)
-        print(yHuone(False)) """
 
 class Huone:
     def __init__(self, huoneNro):
@@ -99,7 +105,7 @@ class Huone:
         self.sisalto = []
         self.avattu = True
 
-    def luo_tulostettava_sisalto(self):
+    def luo_tulostettava_sisalto(self): #debug: shuffle kuntoo
         self.tulostettavaSisalto = []
         if self.avattu:
             for olio in self.sisalto:
