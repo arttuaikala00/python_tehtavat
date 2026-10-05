@@ -1,28 +1,68 @@
 import random
+from collections import Counter
+
+
+virVal = "Virheellinen valinta. Yritä uudelleen\n"
 
 
 def main():
+    global pelaaja
+    pelaaja = Pelaaja()
+    global luola
     luola = Luola()
-    luola.tulosta_luola()
-    print("1")
-    luola.tulosta_huone(1)
-    print("3")
-    luola.tulosta_huone(3)
-    print("5")
-    luola.tulosta_huone(5)
-    print("11")
-    luola.tulosta_huone(11)
-    print("13")
-    luola.tulosta_huone(13)
-    print("15")
-    luola.tulosta_huone(15)
-    print("21")
-    luola.tulosta_huone(21)
-    print("23")
-    luola.tulosta_huone(23)
-    print("25")
-    luola.tulosta_huone(25)
 
+    luola.huonevalikko()
+
+
+class Pelaaja:
+    def __init__(self):
+        self.sijainti = 13
+        self.viereisetHuoneet = [8, 12, 14, 18]
+        self.reppu = []
+        self.ase = Miekka(1)
+        self.kypara = None
+        self.haarniska = None
+        self.saappaat = None
+
+    def siirry_huoneeseen(self, huoneNro):
+        if huoneNro == 0:
+            return
+        elif 1 >= huoneNro >= 25:
+            raise Exception
+
+        self.sijainti = huoneNro
+        self.viereisetHuoneet = []
+        if self.sijainti > 5:
+            self.viereisetHuoneet.append(self.sijainti - 5)
+        if self.sijainti % 5 != 0:
+            self.viereisetHuoneet.append(self.sijainti + 1)
+        if self.sijainti % 5 != 1:
+            self.viereisetHuoneet.append(self.sijainti - 1)
+        if self.sijainti < 20:
+            self.viereisetHuoneet.append(self.sijainti + 5)
+        luola.tulosta_huone(self.sijainti)
+        luola.tulosta_huone_sisalto(self.sijainti)
+        luola.huonevalikko()
+
+    def tulosta_tavaraluettelo(self):
+        print("Sinulla on päälläsi:")
+        if self.ase: print(f" {tulostettava_esine(self.ase)}")
+        if self.kypara: print(f" {tulostettava_esine(self.kypara)}")
+        if self.haarniska: print(f" {tulostettava_esine(self.haarniska)}")
+        if self.saappaat: print(f" {tulostettava_esine(self.saappaat)}")
+        print()
+
+        if self.reppu:
+            print("Repussasi on:")
+            for esine_tyyppi, maara in Counter(type(esine) for esine in self.reppu).items():
+                esine = next(esine for esine in self.reppu if type(esine) is esine_tyyppi)
+                if maara > 1:
+                    print(f" - {maara}x {tulostettava_esine(esine)}")
+                else:
+                    print(f" - {tulostettava_esine(esine)}")
+        else:
+            print("Reppusi on tyhjä.")
+        print()
 
 class Luola:
     def __init__(self):
@@ -63,7 +103,7 @@ class Luola:
                 print(" ".join(riviTulostus))
             print()
 
-    def tulosta_huone(self, huoneNro): #debug: sais tehtyy paremmin
+    def tulosta_huone(self, huoneNro):
         for huone in self.huoneet:
             huone.luo_tulostettava_sisalto()
 
@@ -99,11 +139,93 @@ class Luola:
                 print(" ".join(riviTulostus))
             print()
 
+    def tulosta_huone_sisalto(self, huoneNro):
+        kohdeHuone = huoneNro - 1
+
+        print("Huoneen sisältö:")
+        for sisalto in self.huoneet[kohdeHuone].sisalto:
+            print(f" - {tulostettava_sisalto(sisalto)}")
+        print()
+
+    def valaise_huone(self, huoneNro): #debug: jos siirtyy valaistuun huoneeseen, breakkaako toi aikasempi huonevalikko ?
+        if huoneNro not in pelaaja.viereisetHuoneet:
+            raise Exception
+
+        kohdeHuone = huoneNro - 1
+
+        if self.huoneet[kohdeHuone].avattu:
+            print(f"Huone {huoneNro} on jo valaistu")
+            print()
+        else:
+            self.huoneet[kohdeHuone].avattu = True
+            print(f"Huone {huoneNro} on nyt valaistu.")
+            print()
+
+            self.tulosta_huone(huoneNro)
+
+            while True:
+                valinta = input(f"Haluatko siirtyä huoneeseen {huoneNro}? (K/E): ")
+                print()
+
+                match valinta.upper():
+                    case "K":
+                        pelaaja.siirry_huoneeseen(huoneNro)
+                        return
+                    case "E":
+                        break
+                    case _:
+                        pass
+       
+    def huonevalikko(self):
+        while True:
+            self.tulosta_huone(pelaaja.sijainti)
+
+            print("Avaa tavaraluettelo: 1")
+            print("Avaa kartta: 2")
+            print("Valaise huone: 3")
+            print()
+
+            valinta = input()
+            print()
+            match valinta:
+                case "1":
+                    pelaaja.tulosta_tavaraluettelo()
+                case "2":
+                    self.karttavalikko()
+                case "3":
+                    while True:
+                        try:
+                            huone = int(input("Valitse viereisesi huone (Poistu: 0): "))
+                            print()
+                            if huone == 0:
+                                break
+                            self.valaise_huone(huone)
+                            break
+                        except:
+                            print("Valitse viereisesi huone.")
+                            print()
+                case _:
+                    print(virVal)
+
+    def karttavalikko(self):
+        while True:
+            self.tulosta_luola()
+
+            while True:
+                try:
+                    huone = int(input("Siirry huoneeseen (Poistu: 0): "))
+                    break
+                except:
+                    print("Syötä luku 1 ja 25 väliltä.")
+
+                pelaaja.siirry_huoneeseen(huone)
+                break
+
 class Huone:
     def __init__(self, huoneNro):
         self.huoneNro = huoneNro
         self.sisalto = []
-        self.avattu = True
+        self.avattu = False
 
     def luo_tulostettava_sisalto(self): #debug: shuffle kuntoo
         self.tulostettavaSisalto = []
@@ -128,88 +250,125 @@ class Huone:
 class Resurssihuone(Huone):
     def __init__(self, huoneNro):
         super().__init__(huoneNro)
+
+        resurssit = (
+            Rautamalmi(),
+            Lisko(),
+            Villa(),
+            Vehna(),
+            Yrtti()
+        )
+
         for i in range(random.randint(2, 4)):
-            self.sisalto.append(Resurssi())
+            self.sisalto.append(random.choice(resurssit))
         if random.randint(0, 1) == 0:
-            self.sisalto.append(Orkki1())
+            self.sisalto.append(Orkki(1))
 
 class Orkkihuone(Huone):
     def __init__(self, huoneNro):
         super().__init__(huoneNro)
         for i in range(3):
             if random.random() < 2/3:
-                self.sisalto.append(Orkki2())
+                self.sisalto.append(Orkki(2))
             else:
-                self.sisalto.append(Orkki1())
+                self.sisalto.append(Orkki(1))
 
 class Aarrehuone(Huone):
     def __init__(self, huoneNro):
         super().__init__(huoneNro)
         self.sisalto.append(Arkku())
-        self.sisalto.append(Orkki3())
+        self.sisalto.append(Orkki(3))
 
 class Kotihuone(Huone):
     def __init__(self, huoneNro):
         super().__init__(huoneNro)
         self.avattu = True
-        self.sisalto.append(Portaat())
         self.sisalto.append(Tyopoyta())
+        self.sisalto.append(Portaat())
         self.sisalto.append(Kellari())
 
-class Resurssi:
-    def __init__(self):
-        self.tyyppi = random.choice(("Rautamalmi", "Lisko", "Villa", "Vehna", "Yrtti"))
+class Rautamalmi:
+    pass
+
+class Lisko:
+    pass
+
+class Villa:
+    pass
+
+class Vehna:
+    pass
+
+class Yrtti:
+    pass
+
+class Miekka:
+    def __init__(self, taso):
+        self.taso = taso
+
+class Kypara:
+    def __init__(self, taso):
+        self.taso = taso
+
+class Haarniska:
+    def __init__(self, taso):
+        self.taso = taso
+
+class Saappaat:
+    def __init__(self, taso):
+        self.taso = taso
 
 class Orkki:
-    def __init__(self):
-        pass
+    def __init__(self, taso):
+        self.taso = taso
 
-class Orkki1(Orkki):
-    def __init__(self):
-        pass
+class Arkku:
+    pass
 
-class Orkki2(Orkki):
-    def __init__(self):
-        pass
+class Portaat:
+    pass
 
-class Orkki3(Orkki):
-    def __init__(self):
-        pass
+class Tyopoyta:
+    pass
 
-class Arkku():
-    def __init__(self):
-        pass
+class Kellari:
+    pass
 
-class Portaat():
-    def __init__(self):
-        pass
+def paavalikko():
+    while True:
+        print("Aloita peli: 1")
 
-class Tyopoyta():
-    def __init__(self):
-        pass
+        valinta = input()
 
-class Kellari():
-    def __init__(self):
-        pass
+        match valinta:
+            case "1":
+                aloita_peli()
+                break
+            case _:
+                print(virVal)
+
+def aloita_peli():
+    global pelaaja
+    pelaaja = Pelaaja()
+    global luola
+    luola = Luola()
+
+    pelaaja.siirry_huoneeseen(pelaaja.sijainti)
 
 def tulostettava_muoto(olio):
     match olio:
-        case Resurssi(tyyppi="Rautamalmi"):
+        case Rautamalmi():
             return "Ra"
-        case Resurssi(tyyppi="Lisko"):
+        case Lisko():
             return "Li"
-        case Resurssi(tyyppi="Villa"):
+        case Villa():
             return "Vi"
-        case Resurssi(tyyppi="Vehna"):
+        case Vehna():
             return "Ve"
-        case Resurssi(tyyppi="Yrtti"):
+        case Yrtti():
             return "Yr"
-        case Orkki1():
-            return "Ö1"
-        case Orkki2():
-            return "Ö2"
-        case Orkki3():
-            return "Ö3"
+        case Orkki(taso=taso):
+            return f"Ö{taso}"
         case Arkku():
             return "Ar"
         case Portaat():
@@ -218,6 +377,50 @@ def tulostettava_muoto(olio):
             return "Ty"
         case Kellari():
             return "Ke"
+
+def tulostettava_sisalto(olio):
+    match olio:
+        case Rautamalmi():
+            return "Rautamalmi"
+        case Lisko():
+            return "Lisko"
+        case Villa():
+            return "Villa"
+        case Vehna():
+            return "Vehnä"
+        case Yrtti():
+            return "Yrtti"
+        case Orkki(taso=taso):
+            return f"Örkki ({taso})"
+        case Arkku():
+            return "Arkku"
+        case Portaat():
+            return "Portaat"
+        case Tyopoyta():
+            return "Työpöytä"
+        case Kellari():
+            return "Kellari"
+
+def tulostettava_esine(olio):
+    match olio:
+        case Rautamalmi():
+            return "Rautaharkko"
+        case Lisko():
+            return "Nahka"
+        case Villa():
+            return "Villa"
+        case Vehna():
+            return "Vehnä"
+        case Yrtti():
+            return "Yrtti"
+        case Miekka(taso=taso):
+            return f"Miekka ({taso})"
+        case Kypara(taso=taso):
+            return f"Kypärä ({taso})"
+        case Haarniska(taso=taso):
+            return f"Haarniska ({taso})"
+        case Saappaat(taso=taso):
+            return f"Saappaat ({taso})"
 
 
 if __name__ == "__main__":
