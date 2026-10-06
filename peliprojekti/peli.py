@@ -11,7 +11,7 @@ def main():
     global luola
     luola = Luola()
 
-    luola.huonevalikko()
+    pelaaja.siirry_huoneeseen(pelaaja.sijainti)
 
 
 class Pelaaja:
@@ -28,7 +28,12 @@ class Pelaaja:
         if huoneNro == 0:
             return
         elif 1 >= huoneNro >= 25:
-            raise Exception
+            raise Exception("Valitse luku 1 ja 25 väliltä.")
+
+        if not luola.huoneet[huoneNro - 1].avattu:
+            print(f"Huonetta {huoneNro} ei ole valaistu.")
+            print()
+            return
 
         self.sijainti = huoneNro
         self.viereisetHuoneet = []
@@ -40,8 +45,6 @@ class Pelaaja:
             self.viereisetHuoneet.append(self.sijainti - 1)
         if self.sijainti < 20:
             self.viereisetHuoneet.append(self.sijainti + 5)
-        luola.tulosta_huone(self.sijainti)
-        luola.tulosta_huone_sisalto(self.sijainti)
         luola.huonevalikko()
 
     def tulosta_tavaraluettelo(self):
@@ -147,9 +150,9 @@ class Luola:
             print(f" - {tulostettava_sisalto(sisalto)}")
         print()
 
-    def valaise_huone(self, huoneNro): #debug: jos siirtyy valaistuun huoneeseen, breakkaako toi aikasempi huonevalikko ?
+    def valaise_huone(self, huoneNro):
         if huoneNro not in pelaaja.viereisetHuoneet:
-            raise Exception
+            raise Exception("Valitse viereisesti huone")
 
         kohdeHuone = huoneNro - 1
 
@@ -179,10 +182,12 @@ class Luola:
     def huonevalikko(self):
         while True:
             self.tulosta_huone(pelaaja.sijainti)
+            self.tulosta_huone_sisalto(pelaaja.sijainti)
 
             print("Avaa tavaraluettelo: 1")
             print("Avaa kartta: 2")
             print("Valaise huone: 3")
+            print("")
             print()
 
             valinta = input()
@@ -202,7 +207,6 @@ class Luola:
                             self.valaise_huone(huone)
                             break
                         except:
-                            print("Valitse viereisesi huone.")
                             print()
                 case _:
                     print(virVal)
@@ -214,12 +218,16 @@ class Luola:
             while True:
                 try:
                     huone = int(input("Siirry huoneeseen (Poistu: 0): "))
+                    print()
+                    if huone == 0:
+                        break
+                    pelaaja.siirry_huoneeseen(huone)
                     break
-                except:
-                    print("Syötä luku 1 ja 25 väliltä.")
-
-                pelaaja.siirry_huoneeseen(huone)
-                break
+                except ValueError:
+                    print()
+                    print("Valitse luku 1 ja 25 väliltä.")
+                    print()
+            break
 
 class Huone:
     def __init__(self, huoneNro):
