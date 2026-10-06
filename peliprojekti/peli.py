@@ -67,6 +67,9 @@ class Pelaaja:
             print("Reppusi on tyhjä.")
         print()
 
+    def avaa_tyopoyta(self):
+        pass
+
 class Luola:
     def __init__(self):
         self.huoneet = []
@@ -181,13 +184,23 @@ class Luola:
        
     def huonevalikko(self):
         while True:
+            kohdeHuone = self.huoneet[pelaaja.sijainti - 1]
+
+
             self.tulosta_huone(pelaaja.sijainti)
             self.tulosta_huone_sisalto(pelaaja.sijainti)
 
             print("Avaa tavaraluettelo: 1")
             print("Avaa kartta: 2")
             print("Valaise huone: 3")
-            print("")
+
+            print(kohdeHuone)
+
+            if isinstance(kohdeHuone, Kotihuone):
+                print("Avaa työpöytä: 7")
+                print("Mene kellariin: 8")
+                print("Poistu pelistä: 9")
+            
             print()
 
             valinta = input()
@@ -208,6 +221,12 @@ class Luola:
                             break
                         except:
                             print()
+                case "7" if isinstance(kohdeHuone, Kotihuone):
+                    pelaaja.avaa_tyopoyta()
+                case "8" if isinstance(kohdeHuone, Kotihuone):
+                    pass
+                case "9" if isinstance(kohdeHuone, Kotihuone):
+                    lopeta_peli()
                 case _:
                     print(virVal)
 
@@ -258,14 +277,6 @@ class Huone:
 class Resurssihuone(Huone):
     def __init__(self, huoneNro):
         super().__init__(huoneNro)
-
-        resurssit = (
-            Rautamalmi(),
-            Lisko(),
-            Villa(),
-            Vehna(),
-            Yrtti()
-        )
 
         for i in range(random.randint(2, 4)):
             self.sisalto.append(random.choice(resurssit))
@@ -362,6 +373,22 @@ def aloita_peli():
     luola = Luola()
 
     pelaaja.siirry_huoneeseen(pelaaja.sijainti)
+
+def lopeta_peli():
+    global pelaaja
+    del pelaaja
+    global luola
+    del luola
+    paavalikko()
+
+global resurssit
+resurssit = (
+    Rautamalmi(),
+    Lisko(),
+    Villa(),
+    Vehna(),
+    Yrtti()
+)
 
 def tulostettava_muoto(olio):
     match olio:
